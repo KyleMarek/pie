@@ -12,6 +12,10 @@ focuses on type safety, performance and immutability.
   * [Custom Types](#custom-types)
   * [Limiting Functions Generated](#limiting-functions-generated)
 - [Functions](#functions)
+  * [AreSorted() bool](#aresorted---bool)
+  * [AreUnique() bool](#areunique---bool)
+  * [Average() float64](#average---float64)
+  * [Contains(lookingFor ElementType) bool](#contains-lookingfor-elementtype--bool)
 - [FAQ](#faq)
   * [What are the requirements?](#what-are-the-requirements-)
   * [What are the goals of `pie`?](#what-are-the-goals-of--pie--)
@@ -122,6 +126,8 @@ This will only generate `myInts.Average`, `myInts.Sum` and `myStrings.Select`.
 
 # Functions
 
+Here is a summary of all of the function. Specific documentation is below.
+
 | Function     | String | Number | Struct| Maps | Big-O    | Description |
 | ------------ | :----: | :----: | :----:| :--: | :------: | ----------- |
 | `All`        | ✓      | ✓      | ✓     |      | n        | All will return true if all callbacks return true. If the list is empty then true is always returned. |
@@ -156,6 +162,110 @@ This will only generate `myInts.Average`, `myInts.Sum` and `myStrings.Select`.
 | `Unique`     | ✓      | ✓      |       |      | n⋅log(n) | Return a new slice with only unique elements. |
 | `Unselect`   | ✓      | ✓      | ✓     |      | n        | A new slice containing only the elements that returned false from the condition. |
 | `Values`     |        |        |       | ✓    | n        | Returns all values in the map (in random order). |
+
+## All(fn func(value ElementType) bool) bool
+
+All will return true if all callbacks return true. It follows the same logic as
+the all() function in Python.
+
+If the list is empty then true is always returned.
+
+## Any(fn func(value ElementType) bool) bool
+
+Any will return true if any callbacks return true. It follows the same logic as
+the any() function in Python.
+
+If the list is empty then false is always returned.
+
+## Append(elements ...ElementType) SliceType
+
+Append will return a new slice with the elements appended to the end. It is a
+wrapper for the internal append(). It is offered as a function so that it can
+more easily chained.
+
+It is acceptable to provide zero arguments.
+
+## AreSorted() bool
+
+AreSorted will return true if the slice is already sorted. It is a wrapper for
+`sort.SliceTypeAreSorted`.
+
+## AreUnique() bool
+
+AreUnique will return true if the slice contains elements that are all different
+(unique) from each other.
+
+## Average() float64
+
+Average is the average of all of the elements, or zero if there are no elements.
+
+## Bottom(n int) SliceType
+
+Bottom will return n elements from bottom.
+
+That means that elements is taken from the end of the slice for this `[1,2,3]`
+slice with n == 2 will be returned `[3,2]`
+
+If the slice has less elements then n that'll return all elements. If n < 0
+it'll return empty slice.
+
+## Contains(lookingFor ElementType) bool
+
+Contains returns true if the element exists in the slice.
+
+When using slices of pointers it will only compare by address, not value.
+
+## Each(fn func(ElementType)) SliceType
+
+Each is more condensed version of `Transform` that allows an action to happen on
+each elements and pass the original slice on.
+
+```go
+cars.Each(func (car *Car) {
+	fmt.Printf("Car color is: %s\n", car.Color)
+})
+```
+
+Pie will not ensure immutability on items passed in so they can be manipulated,
+if you choose to do it this way, for example:
+
+```go
+// Set all car colors to Red.
+cars.Each(func (car *Car) {
+	car.Color = "Red"
+})
+```
+
+## Extend(slices ...SliceType) SliceType
+
+Extend will return a new slice with the slices of elements appended to the end.
+
+It is acceptable to provide zero arguments.
+
+## First() ElementType
+
+First returns the first element, or zero. Also see FirstOr().
+
+## FirstOr(defaultValue ElementType) ElementType
+
+FirstOr returns the first element or a default value if there are no elements.
+
+## Join(glue string) string
+
+Join returns a string from joining each of the elements.
+
+## JSONString() string
+
+JSONString returns the JSON encoded array as a string.
+
+One important thing to note is that it will treat a nil slice as an empty slice
+to ensure that the JSON value return is always an array.
+
+## Keys() KeySliceType
+
+Keys returns the keys in the map. All of the items will be unique.
+
+Due to Go's randomization of iterating maps the order is not deterministic.
 
 # FAQ
 
